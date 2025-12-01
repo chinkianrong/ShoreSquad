@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Rally your crew, track weather, and hit the next beach cleanup with ShoreSquad - the dope map app for eco-warriors.">
+    <meta name="theme-color" content="#0066CC">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <title>ShoreSquad - Beach Cleanup Made Social</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='50' font-size='50' text-anchor='middle' dominant-baseline='middle'>🌊</text></svg>">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Leaflet (Map Library) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <!-- Navigation Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <h1 class="logo">🌊 ShoreSquad</h1>
+                <nav class="nav" role="navigation" aria-label="Main navigation">
+                    <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <ul class="nav-menu">
+                        <li><a href="#map" class="nav-link">Map</a></li>
+                        <li><a href="#events" class="nav-link">Events</a></li>
+                        <li><a href="#crew" class="nav-link">Crew</a></li>
+                        <li><a href="#weather" class="nav-link">Weather</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h2>Rally Your Crew</h2>
+                    <p>Track weather, find cleanups, make waves with your squad</p>
+                    <button class="btn btn-primary btn-lg" id="getStartedBtn" aria-label="Get started with ShoreSquad">
+                        Start a Cleanup →
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Map Section -->
+        <section id="map" class="section map-section">
+            <div class="container">
+                <h2 class="section-title">Find Beach Cleanups Near You</h2>
+                <div class="map-container" role="region" aria-label="Interactive beach cleanup map">
+                    <div id="map-element"></div>
+                </div>
+                <div class="map-controls">
+                    <button class="btn btn-secondary" id="useMyLocationBtn" aria-label="Use my current location">
+                        📍 Use My Location
+                    </button>
+                    <button class="btn btn-secondary" id="toggleThemeBtn" aria-label="Toggle dark mode">
+                        🌙 Dark Mode
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Next Cleanup Location Section -->
+        <section id="next-cleanup" class="section cleanup-location-section">
+            <div class="container">
+                <h2 class="section-title">Next Cleanup Spot: Pasir Ris</h2>
+                <p class="section-subtitle">Join us for the next beach cleanup at Pasir Ris. Starting location: Street View Asia</p>
+                <div class="map-iframe-container" role="region" aria-label="Google Map showing next cleanup location at Pasir Ris">
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3988.8198893145147!2d103.9533733!3d1.381497!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31da14e843a52345%3A0x1234567890abcdef!2sStreet%20View%20Asia%2C%20Pasir%20Ris!5e0!3m2!1sen!2ssg!4v1701388800000" 
+                        width="100%" 
+                        height="400" 
+                        style="border:0; border-radius: 8px;" 
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade"
+                        title="Next cleanup location at Pasir Ris">
+                    </iframe>
+                </div>
+                <div class="cleanup-details">
+                    <h3>📍 Location Details</h3>
+                    <p><strong>Spot:</strong> Pasir Ris Beach</p>
+                    <p><strong>Coordinates:</strong> 1.381497°N, 103.955574°E</p>
+                    <p><strong>Area:</strong> Street View Asia</p>
+                    <button class="btn btn-primary" id="joinCleanupBtn" aria-label="Join the next cleanup at Pasir Ris">
+                        Join This Cleanup →
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Weather Section -->
+        <section id="weather" class="section weather-section">
+            <div class="container">
+                <h2 class="section-title">Weather & Conditions</h2>
+                <div class="weather-grid" id="weatherContainer">
+                    <div class="weather-card skeleton" aria-label="Loading weather information">
+                        <div class="skeleton-bar"></div>
+                        <div class="skeleton-bar"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Events Section -->
+        <section id="events" class="section events-section">
+            <div class="container">
+                <h2 class="section-title">Upcoming Cleanups</h2>
+                <div class="events-grid" id="eventsContainer">
+                    <div class="event-card skeleton" aria-label="Loading upcoming events">
+                        <div class="skeleton-bar"></div>
+                        <div class="skeleton-bar"></div>
+                        <div class="skeleton-bar short"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Crew Section -->
+        <section id="crew" class="section crew-section">
+            <div class="container">
+                <h2 class="section-title">Your Crew</h2>
+                <div class="crew-container">
+                    <div class="crew-stats" id="crewStats">
+                        <div class="stat-box">
+                            <div class="stat-number">0</div>
+                            <div class="stat-label">Squad Members</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">0</div>
+                            <div class="stat-label">Total Cleanups</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">0</div>
+                            <div class="stat-label">Lbs Collected</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="inviteCrewBtn" aria-label="Invite your crew to ShoreSquad">
+                        Invite Your Crew
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>ShoreSquad</h3>
+                    <p>Making beach cleanups social and fun 🌊</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="#privacy">Privacy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Follow Us</h4>
+                    <ul>
+                        <li><a href="#" aria-label="ShoreSquad on Instagram">Instagram</a></li>
+                        <li><a href="#" aria-label="ShoreSquad on TikTok">TikTok</a></li>
+                        <li><a href="#" aria-label="ShoreSquad on Twitter">Twitter</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 ShoreSquad. Committed to clean beaches and healthy oceans. 🌍</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal for Event Details -->
+    <div class="modal" id="eventModal" role="dialog" aria-labelledby="eventModalTitle" aria-hidden="true">
+        <div class="modal-content">
+            <button class="modal-close" aria-label="Close modal">&times;</button>
+            <h3 id="eventModalTitle">Event Details</h3>
+            <div id="eventModalBody"></div>
+            <button class="btn btn-primary" id="joinEventBtn">Join Cleanup</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script src="js/app.js" defer></script>
+    
+    <!-- Service Worker Registration (PWA) -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed:', err));
+        }
+    </script>
+</body>
+</html>
