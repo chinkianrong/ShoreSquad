@@ -174,56 +174,144 @@ function closeModal() {
 }
 
 // ============================================
-// WEATHER INTEGRATION
+// WEATHER INTEGRATION - NEA API
 // ============================================
 function loadWeatherData() {
-    // Mock weather data (replace with real API call)
-    const weatherData = [
+    // Fetch 4-day weather forecast from NEA API
+    const forecastUrl = 'https://api.data.gov.sg/v1/environment/4-day-weather-forecast';
+    
+    fetch(forecastUrl)
+        .then(response => response.json())
+        .then(data => {
+            const forecastData = processWeatherData(data);
+            renderWeatherCards(forecastData);
+        })
+        .catch(error => {
+            console.error('Weather API error:', error);
+            // Fallback to mock data if API fails
+            renderWeatherCards(getMockWeatherData());
+        });
+}
+
+function processWeatherData(apiData) {
+    // Convert NEA API response to our weather format
+    if (!apiData.items || apiData.items.length === 0) {
+        return getMockWeatherData();
+    }
+    
+    return apiData.items.map((item, index) => {
+        const forecast = item.forecasts[0] || {};
+        const tempData = forecast.temperature || {};
+        const humidityData = forecast.relative_humidity || {};
+        const windData = forecast.wind || {};
+        
+        // Format date
+        const date = new Date(item.timestamp);
+        const dateString = date.toLocaleDateString('en-SG', { 
+            weekday: 'short', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+        
+        return {
+            location: `Singapore - ${dateString}`,
+            date: dateString,
+            dayIndex: index + 1,
+            forecast: forecast.forecast || 'No forecast',
+            tempMin: tempData.low || '--',
+            tempMax: tempData.high || '--',
+            humidity: humidityData.high || '--',
+            humidityLow: humidityData.low || '--',
+            windSpeed: windData.speed ? windData.speed.high : '--',
+            windDirection: windData.direction || 'N/A',
+            condition: determineForecastIcon(forecast.forecast || '')
+        };
+    }).slice(0, 4); // Return only 4 days
+}
+
+function determineForecastIcon(forecastText) {
+    const text = forecastText.toLowerCase();
+    if (text.includes('rain') || text.includes('thundery')) return '🌧️';
+    if (text.includes('partly') || text.includes('cloudy')) return '⛅';
+    if (text.includes('sunny') || text.includes('fair')) return '☀️';
+    if (text.includes('overcast')) return '☁️';
+    return '🌤️';
+}
+
+function getMockWeatherData() {
+    // Fallback mock data for Singapore
+    return [
         {
-            location: 'Venice Beach',
-            temp: 72,
-            condition: 'Sunny',
-            humidity: 65,
-            windSpeed: 8,
-            tide: 'Low - 2:30 PM'
+            location: 'Singapore - Today',
+            forecast: 'Sunny',
+            tempMin: 24,
+            tempMax: 32,
+            humidity: 75,
+            humidityLow: 60,
+            windSpeed: 15,
+            windDirection: 'NE',
+            condition: '☀️'
         },
         {
-            location: 'Santa Monica',
-            temp: 71,
-            condition: 'Partly Cloudy',
-            humidity: 68,
-            windSpeed: 10,
-            tide: 'High - 8:45 PM'
+            location: 'Singapore - Tomorrow',
+            forecast: 'Partly Cloudy',
+            tempMin: 23,
+            tempMax: 31,
+            humidity: 78,
+            humidityLow: 65,
+            windSpeed: 12,
+            windDirection: 'NE',
+            condition: '⛅'
+        },
+        {
+            location: 'Singapore - Day 3',
+            forecast: 'Thundery Showers',
+            tempMin: 23,
+            tempMax: 30,
+            humidity: 85,
+            humidityLow: 70,
+            windSpeed: 18,
+            windDirection: 'SW',
+            condition: '🌧️'
+        },
+        {
+            location: 'Singapore - Day 4',
+            forecast: 'Fair',
+            tempMin: 24,
+            tempMax: 32,
+            humidity: 72,
+            humidityLow: 58,
+            windSpeed: 14,
+            windDirection: 'NE',
+            condition: '🌤️'
         }
     ];
-    
-    renderWeatherCards(weatherData);
 }
 
 function renderWeatherCards(data) {
     const container = document.getElementById('weatherContainer');
     container.innerHTML = data.map(weather => `
-        <div class="weather-card" role="article" aria-label="Weather for ${weather.location}">
-            <h4>${weather.location}</h4>
-            <div class="weather-metric">
-                <label>Temperature:</label>
-                <value>${weather.temp}°F</value>
+        <div class="weather-card" role="article" aria-label="Weather forecast for ${weather.location}">
+            <div class="weather-header">
+                <h4>${weather.location}</h4>
+                <div class="weather-icon">${weather.condition}</div>
             </div>
-            <div class="weather-metric">
-                <label>Condition:</label>
-                <value>${weather.condition}</value>
+            <div class="weather-forecast">
+                ${weather.forecast}
             </div>
-            <div class="weather-metric">
-                <label>Humidity:</label>
-                <value>${weather.humidity}%</value>
-            </div>
-            <div class="weather-metric">
-                <label>Wind:</label>
-                <value>${weather.windSpeed} mph</value>
-            </div>
-            <div class="weather-metric">
-                <label>Tide:</label>
-                <value>${weather.tide}</value>
+            <div class="weather-metrics">
+                <div class="weather-metric">
+                    <label>Temperature:</label>
+                    <value>${weather.tempMin}°C - ${weather.tempMax}°C</value>
+                </div>
+                <div class="weather-metric">
+                    <label>Humidity:</label>
+                    <value>${weather.humidityLow || '--'}% - ${weather.humidity || '--'}%</value>
+                </div>
+                <div class="weather-metric">
+                    <label>Wind:</label>
+                    <value>${weather.windSpeed || '--'} km/h ${weather.windDirection || ''}</value>
+                </div>
             </div>
         </div>
     `).join('');
@@ -280,8 +368,8 @@ function updateCrewStats() {
             <div class="stat-label">Total Cleanups</div>
         </div>
         <div class="stat-box">
-            <div class="stat-number">${(app.crew.totalWeight / 1000).toFixed(1)}K</div>
-            <div class="stat-label">Lbs Collected</div>
+            <div class="stat-number">${(app.crew.totalWeight / 453.592).toFixed(1)}K</div>
+            <div class="stat-label">Kg Collected</div>
         </div>
     `;
     
